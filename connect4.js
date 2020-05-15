@@ -13,7 +13,7 @@
 
 class Game {
   constructor(height = 6, width = 7){
-    this.height = height; // all caps?
+    this.height = height; // all caps? -> no
     this.width = width;
     this.currPlayer = 1;
     this.board = [];
