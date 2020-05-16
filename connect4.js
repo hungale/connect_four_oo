@@ -10,13 +10,21 @@
 
 // let currPlayer = 1; // active player: 1 or 2
 //let board = []; // array of rows, each row is array of cells  (board[y][x])
+let player1, player2;
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
 
 class Game {
   constructor(height = 6, width = 7){
     this.height = height; // all caps? -> no
     this.width = width;
-    this.currPlayer = 1;
+    this.players = [player1, player2];
+    this.currPlayer = player1;
     this.board = [];
+    this.winnerFound = false;
 
     this.makeBoard();
     this.makeHtmlBoard();
@@ -84,7 +92,8 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.classList.add(`p${this.players.indexOf(this.currPlayer)+1}`);
+    piece.style.backgroundColor = this.currPlayer.color;
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -103,33 +112,41 @@ class Game {
   // handleClick = (evt) => {
   handleClick(evt) {
     // get x from ID of clicked cell
-    const x = +evt.target.id;
-    // console.log(this);
-    // debugger;
-    
-    // get next spot in column (if none, ignore click)
-    const y = this.findSpotForCol(x);
-    if (y === null) {
-      return;
-    }
+    if (!this.winnerFound) {
 
-    // place piece in board and add to HTML table
-    this.board[y][x] = this.currPlayer;
-    this.placeInTable(y, x);
-    
-    // check for win
-    if (this.checkForWin()) { // returns undefined
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      const x = +evt.target.id;
+      // console.log(this);
+      // debugger;
+
+      // get next spot in column (if none, ignore click)
+      const y = this.findSpotForCol(x);
+      if (y === null) {
+        return;
+      }
+
+      // place piece in board and add to HTML table
+      this.board[y][x] = this.currPlayer;
+      this.placeInTable(y, x);
+
+      // check for win
+      if (this.checkForWin()) { // returns undefined
+        // const top = document.createElement('tr');
+        // top.removeEventListener('click', this.handleClick, false);
+        this.winnerFound = true;
+        return this.endGame(`Player ${this.currPlayer.color} won!`);
+      }
+
+      // check for tie
+      if (this.board.every(row => row.every(cell => cell))) {
+        return this.endGame('Tie!');
+      }
+
+      // switch players
+      this.currPlayer = this.currPlayer === player1 ? player2 : player1;
+
     }
-    
-    // check for tie
-    if (this.board.every(row => row.every(cell => cell))) {
-      return this.endGame('Tie!');
-    }
-      
-    // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
   }
+  
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
   checkForWin = () => {
@@ -167,4 +184,16 @@ class Game {
 }
 
 
-new Game(6, 7); 
+function startGame() {
+  const color1 = document.getElementById("player1Color").value;
+  const color2 = document.getElementById("player2Color").value;
+  player1 = new Player(color1);
+  player2 = new Player(color2);
+  resetGame();
+  new Game(6, 7); 
+}
+
+function resetGame() {
+  let board = document.getElementById("board");
+  board.innerHTML= "";
+}
